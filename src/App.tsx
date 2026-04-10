@@ -10,11 +10,18 @@ import {
 import { motion } from 'framer-motion';
 import {
   Activity,
+  AlertTriangle,
+  CheckCircle2,
   ChevronRight,
   Cpu,
+  Layers,
+  Package,
+  Plane,
   Radar,
   Shield,
+  Ship,
   Terminal,
+  Truck,
   Zap,
 } from 'lucide-react';
 import './App.css';
@@ -101,6 +108,76 @@ const commandCards = [
     metric: '11.2k/min',
     detail: 'Cross-region packet and shipment events',
   },
+];
+
+const logisticsServices = [
+  {
+    icon: Plane,
+    title: 'Air Priority',
+    sla: '12-24h',
+    detail: 'Critical high-value cargo with biometric handoff verification.',
+  },
+  {
+    icon: Ship,
+    title: 'Ocean Freight',
+    sla: '5-14d',
+    detail: 'FCL and LCL planning with customs pre-clearance automation.',
+  },
+  {
+    icon: Truck,
+    title: 'Ground Network',
+    sla: 'Same Day',
+    detail: 'Regional mesh routing with dynamic congestion rerouting.',
+  },
+  {
+    icon: Package,
+    title: 'Warehousing',
+    sla: '99.2% Pick',
+    detail: 'Cross-dock inventory, cycle counts, and zero-lag fulfillment.',
+  },
+];
+
+const activeLanes = [
+  { lane: 'LAX -> NRT', volume: '182 containers', status: 'Stable' },
+  { lane: 'HAM -> JFK', volume: '74 pallets', status: 'Watch' },
+  { lane: 'MIA -> BOG', volume: '219 parcels', status: 'Stable' },
+  { lane: 'SIN -> DXB', volume: '98 units', status: 'Accelerated' },
+];
+
+const pipelineStages = ['Intake', 'Compliance', 'Sort', 'Transit', 'Final Mile'];
+
+const shipmentQueue = [
+  { id: 'GS-80241', mode: 'Air', route: 'SFO -> AMS', eta: '04h 10m', priority: 'Critical' },
+  { id: 'GS-80267', mode: 'Ocean', route: 'LON -> NYC', eta: '2d 11h', priority: 'Standard' },
+  { id: 'GS-80304', mode: 'Ground', route: 'DAL -> ATL', eta: '07h 22m', priority: 'Priority' },
+  { id: 'GS-80319', mode: 'Ground', route: 'SEA -> DEN', eta: '11h 50m', priority: 'Standard' },
+];
+
+const slaAlerts = [
+  { lane: 'HAM -> JFK', issue: 'Customs delay risk', level: 'medium' },
+  { lane: 'SIN -> DXB', issue: 'Capacity spike +14%', level: 'low' },
+  { lane: 'LAX -> NRT', issue: 'Weather reroute active', level: 'high' },
+];
+
+const requestTemplates = ['Air Priority', 'Ocean Freight', 'Ground Network', 'Warehousing'];
+
+const servicePlaybooks = [
+  { name: 'Cold Chain Recovery', owner: 'Ops AI-4', status: 'Armed' },
+  { name: 'Port Congestion Reroute', owner: 'Route Intel', status: 'Active' },
+  { name: 'Customs Hold Escalation', owner: 'Compliance Mesh', status: 'Standby' },
+];
+
+const clientSlaBoard = [
+  { client: 'Helios Medical', contract: 'Platinum', onTime: '99.5%', risk: 'Low' },
+  { client: 'Vertex Retail', contract: 'Priority', onTime: '96.8%', risk: 'Medium' },
+  { client: 'Nova Industrial', contract: 'Standard', onTime: '95.9%', risk: 'Medium' },
+  { client: 'Orion Energy', contract: 'Platinum', onTime: '99.1%', risk: 'Low' },
+];
+
+const fleetReadiness = [
+  { asset: 'Air Fleet', ready: '14/16', health: '92%' },
+  { asset: 'Ocean Containers', ready: '842/870', health: '96%' },
+  { asset: 'Ground Vehicles', ready: '219/240', health: '91%' },
 ];
 
 const useAudioPulse = () => {
@@ -458,6 +535,200 @@ const SectorPanel = () => (
   </section>
 );
 
+const ServicesMatrix = () => (
+  <section className="services-matrix glass">
+    <div className="services-head">
+      <p className="eyebrow">Logistics Services</p>
+      <h3>End-to-End Fulfillment Stack</h3>
+    </div>
+
+    <div className="services-grid">
+      {logisticsServices.map((service, idx) => (
+        <motion.article
+          key={service.title}
+          className="service-card"
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.3, delay: idx * 0.08 }}
+        >
+          <div className="service-icon">
+            <service.icon size={18} />
+          </div>
+          <div>
+            <h4>{service.title}</h4>
+            <p>{service.detail}</p>
+          </div>
+          <span>{service.sla}</span>
+        </motion.article>
+      ))}
+    </div>
+
+    <div className="services-lower">
+      <div className="lane-list">
+        <h4>Active Trade Lanes</h4>
+        {activeLanes.map((lane) => (
+          <article key={lane.lane}>
+            <p>{lane.lane}</p>
+            <small>{lane.volume}</small>
+            <strong>{lane.status}</strong>
+          </article>
+        ))}
+      </div>
+
+      <div className="pipeline-view">
+        <h4>Fulfillment Pipeline</h4>
+        <div className="pipeline-track">
+          {pipelineStages.map((stage, idx) => (
+            <div key={stage} className="stage-node">
+              <span>{idx + 1}</span>
+              <p>{stage}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+
+    <OperationsHub />
+    <ServiceGovernance />
+  </section>
+);
+
+const OperationsHub = () => {
+  const [requestService, setRequestService] = useState(requestTemplates[0]);
+  const [requestRoute, setRequestRoute] = useState('LAX -> FRA');
+  const [submitted, setSubmitted] = useState(false);
+
+  const submitRequest = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setSubmitted(true);
+    window.setTimeout(() => setSubmitted(false), 1800);
+  };
+
+  return (
+    <div className="ops-hub">
+      <section className="ops-panel queue-panel">
+        <h4>
+          <Layers size={14} />
+          Shipment Queue
+        </h4>
+        <div className="queue-rows">
+          {shipmentQueue.map((item) => (
+            <article key={item.id}>
+              <div>
+                <p>{item.id}</p>
+                <small>{item.route}</small>
+              </div>
+              <span className="mode-pill">{item.mode}</span>
+              <span className="eta-pill">{item.eta}</span>
+              <strong>{item.priority}</strong>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="ops-panel risk-panel">
+        <h4>
+          <AlertTriangle size={14} />
+          SLA Risk Monitor
+        </h4>
+        <div className="risk-list">
+          {slaAlerts.map((alert) => (
+            <article key={alert.lane} className={`risk-${alert.level}`}>
+              <div>
+                <p>{alert.lane}</p>
+                <small>{alert.issue}</small>
+              </div>
+              <span>{alert.level}</span>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="ops-panel request-panel">
+        <h4>
+          <CheckCircle2 size={14} />
+          Service Request Intake
+        </h4>
+        <form onSubmit={submitRequest}>
+          <label>
+            Service
+            <select
+              value={requestService}
+              onChange={(event) => setRequestService(event.target.value)}
+            >
+              {requestTemplates.map((template) => (
+                <option key={template} value={template}>
+                  {template}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            Route
+            <input
+              value={requestRoute}
+              onChange={(event) => setRequestRoute(event.target.value)}
+            />
+          </label>
+          <button type="submit">Submit Mission</button>
+          {submitted && <p className="request-ok">Request secured in orchestration queue.</p>}
+        </form>
+      </section>
+    </div>
+  );
+};
+
+const ServiceGovernance = () => (
+  <div className="governance-grid">
+    <section className="gov-panel playbook-panel">
+      <h4>Operations Playbooks</h4>
+      <div className="playbook-list">
+        {servicePlaybooks.map((item) => (
+          <article key={item.name}>
+            <div>
+              <p>{item.name}</p>
+              <small>{item.owner}</small>
+            </div>
+            <span>{item.status}</span>
+          </article>
+        ))}
+      </div>
+    </section>
+
+    <section className="gov-panel client-panel">
+      <h4>Client SLA Board</h4>
+      <div className="client-rows">
+        {clientSlaBoard.map((client) => (
+          <article key={client.client}>
+            <div>
+              <p>{client.client}</p>
+              <small>{client.contract}</small>
+            </div>
+            <span>{client.onTime}</span>
+            <strong>{client.risk}</strong>
+          </article>
+        ))}
+      </div>
+    </section>
+
+    <section className="gov-panel fleet-panel">
+      <h4>Fleet Asset Readiness</h4>
+      <div className="fleet-list">
+        {fleetReadiness.map((fleet) => (
+          <article key={fleet.asset}>
+            <div>
+              <p>{fleet.asset}</p>
+              <small>ready {fleet.ready}</small>
+            </div>
+            <span>{fleet.health}</span>
+          </article>
+        ))}
+      </div>
+    </section>
+  </div>
+);
+
 const BootSequence = () => (
   <motion.div
     className="boot-sequence"
@@ -524,6 +795,7 @@ function App() {
           <SectorPanel />
         </div>
       </main>
+      <ServicesMatrix />
       <footer className="footer-bar">
         <p>Global Streamline LLC // Enterprise Signal Network // 2026</p>
       </footer>
