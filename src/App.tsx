@@ -1,113 +1,22 @@
-import {
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type CSSProperties,
-  type FormEvent,
-  type KeyboardEvent,
-} from 'react';
-import { motion } from 'framer-motion';
+import { useMemo, useState, type FormEvent } from 'react';
 import {
   Activity,
   AlertTriangle,
   CheckCircle2,
-  ChevronRight,
-  Cpu,
   Layers,
   Package,
   Plane,
   Radar,
   Shield,
   Ship,
-  Terminal,
   Truck,
-  Zap,
 } from 'lucide-react';
 import './App.css';
 
-const matrixStreams = [
-  '0101011010011101001011',
-  'SYS:AUTH:OK:ROUTE:SYNC',
-  'A7F45FE MAIN ORIGIN PUSH',
-  'SCAN NODE VECTORS // LIVE',
-  '0111010010111001010011',
-  'TLS_HANDSHAKE ESTABLISHED',
-  'BETA 0.0.1 DEPLOY STABLE',
-  'SATCOM GRID LOCKED',
-  'FREIGHT TELEMETRY 24/7',
-  'COMMAND PIPELINE ACTIVE',
-];
-
-const terminalFeed = [
-  '[22:14:01] uplink secure tunnel..............ok',
-  '[22:14:04] packet stream from 17 corridors...stable',
-  '[22:14:08] anomaly scan.......................none',
-  '[22:14:12] cross-border lanes................armed',
-  '[22:14:16] ai assistant protocol..............ready',
-  '[22:14:21] enterprise dashboard...............online',
-];
-
-const commandHints = ['scan --all', 'status --nodes', 'trace GS-90217', 'help'];
-const allCommands = [...commandHints, 'clear'];
-
-const bootLines = [
-  'booting enterprise command desktop...',
-  'establishing encrypted channels...',
-  'loading freight intelligence graph...',
-  'arming autonomous defense fabric...',
-  'synchronizing global sectors...',
-  'system ready.',
-];
-
-const runMockCommand = (raw: string) => {
-  const cmd = raw.trim().toLowerCase();
-
-  if (!cmd) return 'no command entered';
-  if (cmd === 'help') return 'available: scan --all | status --nodes | trace <id> | clear';
-  if (cmd === 'scan --all') return 'scan complete: 0 threats, 12 warnings, perimeter stable';
-  if (cmd === 'status --nodes') return 'nodes online: 64/64, avg latency 11ms, packet loss 0.02%';
-  if (cmd.startsWith('trace ')) {
-    const token = cmd.replace('trace ', '').toUpperCase();
-    return `trace ${token}: corridor secure, eta 02h 18m, auth signature valid`;
-  }
-  if (cmd === 'clear') return '__clear__';
-
-  return `unknown command: ${cmd} (type help)`;
-};
-
-const sectors = [
-  { name: 'North Atlantic', health: '97%', state: 'Green' },
-  { name: 'West Pacific', health: '93%', state: 'Green' },
-  { name: 'South Corridor', health: '89%', state: 'Watch' },
-  { name: 'Inland Mesh', health: '99%', state: 'Green' },
-];
-
-const commandCards = [
-  {
-    icon: Shield,
-    title: 'Threat Surface',
-    metric: '0 Critical',
-    detail: 'Automated perimeter hardening active',
-  },
-  {
-    icon: Radar,
-    title: 'Route Intelligence',
-    metric: '412 Signals',
-    detail: 'Predictive route optimization in cycle',
-  },
-  {
-    icon: Cpu,
-    title: 'Neural Compute',
-    metric: '84% Load',
-    detail: 'Inference cluster processing manifests',
-  },
-  {
-    icon: Activity,
-    title: 'Live Throughput',
-    metric: '11.2k/min',
-    detail: 'Cross-region packet and shipment events',
-  },
+const kpis = [
+  { icon: Shield, label: 'Security Incidents', value: '0', detail: 'No active security events' },
+  { icon: Radar, label: 'Route Signals', value: '412', detail: 'Predictive lane intelligence online' },
+  { icon: Activity, label: 'Throughput', value: '11.2k/min', detail: 'Cross-network shipment activity' },
 ];
 
 const logisticsServices = [
@@ -115,25 +24,25 @@ const logisticsServices = [
     icon: Plane,
     title: 'Air Priority',
     sla: '12-24h',
-    detail: 'Critical high-value cargo with biometric handoff verification.',
+    detail: 'Critical high-value cargo with chain-of-custody confirmation.',
   },
   {
     icon: Ship,
     title: 'Ocean Freight',
     sla: '5-14d',
-    detail: 'FCL and LCL planning with customs pre-clearance automation.',
+    detail: 'FCL and LCL orchestration with customs pre-clearance.',
   },
   {
     icon: Truck,
     title: 'Ground Network',
     sla: 'Same Day',
-    detail: 'Regional mesh routing with dynamic congestion rerouting.',
+    detail: 'Regional and cross-country dispatch with live rerouting.',
   },
   {
     icon: Package,
     title: 'Warehousing',
     sla: '99.2% Pick',
-    detail: 'Cross-dock inventory, cycle counts, and zero-lag fulfillment.',
+    detail: 'Inventory, cross-dock flow, and synchronized fulfillment.',
   },
 ];
 
@@ -154,17 +63,17 @@ const shipmentQueue = [
 ];
 
 const slaAlerts = [
-  { lane: 'HAM -> JFK', issue: 'Customs delay risk', level: 'medium' },
-  { lane: 'SIN -> DXB', issue: 'Capacity spike +14%', level: 'low' },
-  { lane: 'LAX -> NRT', issue: 'Weather reroute active', level: 'high' },
+  { lane: 'HAM -> JFK', issue: 'Customs delay risk', level: 'Medium' },
+  { lane: 'SIN -> DXB', issue: 'Capacity spike +14%', level: 'Low' },
+  { lane: 'LAX -> NRT', issue: 'Weather reroute active', level: 'High' },
 ];
 
 const requestTemplates = ['Air Priority', 'Ocean Freight', 'Ground Network', 'Warehousing'];
 
 const servicePlaybooks = [
-  { name: 'Cold Chain Recovery', owner: 'Ops AI-4', status: 'Armed' },
-  { name: 'Port Congestion Reroute', owner: 'Route Intel', status: 'Active' },
-  { name: 'Customs Hold Escalation', owner: 'Compliance Mesh', status: 'Standby' },
+  { name: 'Cold Chain Recovery', owner: 'Operations Team', status: 'Armed' },
+  { name: 'Port Congestion Reroute', owner: 'Route Intelligence', status: 'Active' },
+  { name: 'Customs Hold Escalation', owner: 'Compliance', status: 'Standby' },
 ];
 
 const clientSlaBoard = [
@@ -180,424 +89,53 @@ const fleetReadiness = [
   { asset: 'Ground Vehicles', ready: '219/240', health: '91%' },
 ];
 
-const useAudioPulse = () => {
-  const [audioPulse, setAudioPulse] = useState(0.22);
-  const [isReactive, setIsReactive] = useState(false);
-  const rafRef = useRef<number | null>(null);
-  const streamRef = useRef<{
-    ctx: AudioContext;
-    analyser: AnalyserNode;
-    oscillator: OscillatorNode;
-    gain: GainNode;
-  } | null>(null);
+const commandList = ['help', 'scan --all', 'status --nodes', 'trace GS-90217', 'clear'];
 
-  useEffect(() => {
-    return () => {
-      if (rafRef.current !== null) {
-        cancelAnimationFrame(rafRef.current);
-      }
-
-      if (streamRef.current) {
-        streamRef.current.oscillator.stop();
-        streamRef.current.ctx.close();
-      }
-    };
-  }, []);
-
-  const startAudioPulse = () => {
-    if (isReactive) return;
-
-    try {
-      const Ctx = window.AudioContext || (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
-      if (!Ctx) throw new Error('AudioContext unsupported');
-
-      const ctx = new Ctx();
-      const analyser = ctx.createAnalyser();
-      analyser.fftSize = 256;
-
-      const oscillator = ctx.createOscillator();
-      oscillator.type = 'sawtooth';
-      oscillator.frequency.value = 66;
-
-      const gain = ctx.createGain();
-      gain.gain.value = 0.0001;
-
-      oscillator.connect(analyser);
-      analyser.connect(gain);
-      gain.connect(ctx.destination);
-      oscillator.start();
-
-      streamRef.current = { ctx, analyser, oscillator, gain };
-      const bins = new Uint8Array(analyser.frequencyBinCount);
-
-      const tick = () => {
-        analyser.getByteFrequencyData(bins);
-        const sum = bins.reduce((acc, v) => acc + v, 0);
-        const next = Math.min(1, Math.max(0.12, sum / (bins.length * 150)));
-        setAudioPulse(next);
-        rafRef.current = requestAnimationFrame(tick);
-      };
-
-      setIsReactive(true);
-      tick();
-    } catch {
-      setIsReactive(true);
-      let phase = 0;
-      const fakeTick = () => {
-        phase += 0.05;
-        setAudioPulse(0.28 + Math.sin(phase) * 0.16);
-        rafRef.current = requestAnimationFrame(fakeTick);
-      };
-      fakeTick();
-    }
-  };
-
-  return { audioPulse, isReactive, startAudioPulse };
+const runCommand = (raw: string) => {
+  const cmd = raw.trim().toLowerCase();
+  if (!cmd) return 'No command entered.';
+  if (cmd === 'help') return 'Available: scan --all | status --nodes | trace <id> | clear';
+  if (cmd === 'scan --all') return 'Scan complete. 0 critical, 3 warnings, all systems operational.';
+  if (cmd === 'status --nodes') return 'Nodes online: 64/64. Avg latency: 11ms. Packet loss: 0.02%.';
+  if (cmd.startsWith('trace ')) return `Trace ${cmd.replace('trace ', '').toUpperCase()}: in transit, ETA 02h 18m.`;
+  if (cmd === 'clear') return '__clear__';
+  return `Unknown command: ${cmd}`;
 };
 
-const MatrixRain = () => (
-  <div className="matrix-bg" aria-hidden="true">
-    {Array.from({ length: 32 }).map((_, idx) => {
-      const style = {
-        '--x': `${(idx / 32) * 100}%`,
-        '--speed': `${9 + (idx % 8)}s`,
-        '--delay': `${(idx % 6) * -1.3}s`,
-        '--opacity': `${0.12 + (idx % 5) * 0.08}`,
-      } as CSSProperties;
-
-      return (
-        <span
-          key={idx}
-          className="matrix-column"
-          data-stream={matrixStreams[idx % matrixStreams.length]}
-          style={style}
-        />
-      );
-    })}
-  </div>
-);
-
-const Header = () => (
-  <header className="topbar">
-    <div className="brand-mark">
-      <img src="/logo.png" alt="Global Streamline logo" className="logo-img" />
-      <div>
-        <p className="eyebrow">Global Streamline LLC</p>
-        <h1>Enterprise Command Desktop</h1>
-      </div>
-    </div>
-    <div className="status-strip">
-      <span className="dot pulse" />
-      <span>Secure Session: ACTIVE</span>
-      <span className="divider">|</span>
-      <span>Latency: 11ms</span>
-      <span className="divider">|</span>
-      <span>Nodes: 64</span>
-    </div>
-  </header>
-);
-
-type HeroPanelProps = {
-  onLaunch: () => void;
-  isReactive: boolean;
-};
-
-const HeroPanel = ({ onLaunch, isReactive }: HeroPanelProps) => (
-  <motion.section
-    className="hero-panel glass"
-    initial={{ opacity: 0, y: 24 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ duration: 0.8 }}
-  >
-    <p className="eyebrow">Mission Console</p>
-    <h2>
-      Cyber Logistics Grid
-      <span> cinematic realtime orchestration </span>
-    </h2>
-    <p className="hero-copy">
-      A fortified enterprise cockpit for route intelligence, secure automation,
-      and live shipment telemetry under one encrypted glass plane.
-    </p>
-    <div className="hero-actions">
-      <button className="primary-btn" onClick={onLaunch}>
-        Launch Control
-        <ChevronRight size={16} />
-      </button>
-      <button className="ghost-btn">{isReactive ? 'Audio Link Active' : 'Inspect Logs'}</button>
-    </div>
-    <div className="hero-metrics">
-      <article>
-        <p>Global Sync</p>
-        <strong>99.98%</strong>
-      </article>
-      <article>
-        <p>Encrypted Events</p>
-        <strong>8.2M</strong>
-      </article>
-      <article>
-        <p>Active Corridors</p>
-        <strong>142</strong>
-      </article>
-    </div>
-  </motion.section>
-);
-
-const TerminalPanel = () => {
+function App() {
   const [input, setInput] = useState('');
-  const [history, setHistory] = useState<string[]>([]);
-  const [activeSuggestion, setActiveSuggestion] = useState(-1);
+  const [history, setHistory] = useState<string[]>([
+    'Operations log initialized.',
+    'Telemetry stream connected.',
+  ]);
 
-  const hint = useMemo(() => {
-    const idx = history.length % commandHints.length;
-    return commandHints[idx];
-  }, [history.length]);
-
-  const suggestions = useMemo(() => {
-    const query = input.trim().toLowerCase();
-    if (!query) return allCommands.slice(0, 4);
-
-    return allCommands.filter((cmd) => cmd.toLowerCase().startsWith(query)).slice(0, 4);
-  }, [input]);
-
-  useEffect(() => {
-    if (suggestions.length === 0) {
-      setActiveSuggestion(-1);
-      return;
-    }
-
-    if (activeSuggestion >= suggestions.length) {
-      setActiveSuggestion(0);
-    }
-  }, [activeSuggestion, suggestions]);
-
-  const executeCommand = (value: string) => {
-    const raw = value.trim();
-    if (!raw) return;
-
-    const response = runMockCommand(raw);
-    if (response === '__clear__') {
-      setHistory([]);
-      setInput('');
-      setActiveSuggestion(-1);
-      return;
-    }
-
-    setHistory((prev) => [...prev, `> ${raw}`, response]);
-    setInput('');
-    setActiveSuggestion(-1);
-  };
-
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    executeCommand(input);
-  };
-
-  const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
-    if (suggestions.length === 0) return;
-
-    if (event.key === 'ArrowDown') {
-      event.preventDefault();
-      setActiveSuggestion((prev) => (prev + 1) % suggestions.length);
-    }
-
-    if (event.key === 'ArrowUp') {
-      event.preventDefault();
-      setActiveSuggestion((prev) => (prev <= 0 ? suggestions.length - 1 : prev - 1));
-    }
-
-    if ((event.key === 'Tab' || event.key === 'Enter') && activeSuggestion >= 0) {
-      if (event.key === 'Tab') {
-        event.preventDefault();
-        setInput(suggestions[activeSuggestion]);
-      }
-    }
-  };
-
-  return (
-    <motion.section
-      className="terminal-panel glass"
-      initial={{ opacity: 0, y: 28 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.8, delay: 0.15 }}
-    >
-      <header>
-        <div className="terminal-title">
-          <Terminal size={16} />
-          <span>operator@globalstreamline:~</span>
-        </div>
-        <p className="terminal-state">streaming secure output</p>
-      </header>
-      <div className="terminal-body">
-        {terminalFeed.map((line, idx) => (
-          <motion.p
-            key={line}
-            initial={{ opacity: 0, x: -12 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.35, delay: 0.05 * idx }}
-          >
-            {line}
-          </motion.p>
-        ))}
-
-        {history.map((line, idx) => (
-          <motion.p
-            key={`${line}-${idx}`}
-            className={line.startsWith('>') ? 'cmd-line' : 'sys-line'}
-            initial={{ opacity: 0, x: -10 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.2 }}
-          >
-            {line}
-          </motion.p>
-        ))}
-
-        <form className="command-form" onSubmit={handleSubmit}>
-          <label htmlFor="mock-command" className="visually-hidden">
-            Command input
-          </label>
-          <span className="prompt">&gt;</span>
-          <input
-            id="mock-command"
-            value={input}
-            onChange={(event) => setInput(event.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder={`try: ${hint}`}
-            autoComplete="off"
-          />
-          <button type="submit">Run</button>
-        </form>
-
-        {suggestions.length > 0 && (
-          <div className="suggestions" role="listbox" aria-label="Command suggestions">
-            {suggestions.map((cmd, idx) => (
-              <button
-                key={cmd}
-                type="button"
-                className={idx === activeSuggestion ? 'active' : ''}
-                onMouseDown={(event) => event.preventDefault()}
-                onClick={() => executeCommand(cmd)}
-              >
-                {cmd}
-              </button>
-            ))}
-          </div>
-        )}
-
-        <p className="cursor-line">
-          <span>&gt;</span> awaiting operator command
-        </p>
-      </div>
-    </motion.section>
-  );
-};
-
-const CommandCards = () => (
-  <section className="card-grid">
-    {commandCards.map((card, idx) => (
-      <motion.article
-        key={card.title}
-        className="glass command-card"
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.45, delay: idx * 0.08 }}
-        whileHover={{ y: -4 }}
-      >
-        <div className="card-head">
-          <card.icon size={18} />
-          <span>{card.title}</span>
-        </div>
-        <h3>{card.metric}</h3>
-        <p>{card.detail}</p>
-      </motion.article>
-    ))}
-  </section>
-);
-
-const SectorPanel = () => (
-  <section className="glass sectors-panel">
-    <div className="panel-title">
-      <Zap size={16} />
-      <h3>Regional Sector Health</h3>
-    </div>
-    <div className="sector-list">
-      {sectors.map((sector) => (
-        <article key={sector.name}>
-          <div>
-            <p>{sector.name}</p>
-            <small>{sector.state}</small>
-          </div>
-          <strong>{sector.health}</strong>
-        </article>
-      ))}
-    </div>
-  </section>
-);
-
-const ServicesMatrix = () => (
-  <section className="services-matrix glass">
-    <div className="services-head">
-      <p className="eyebrow">Logistics Services</p>
-      <h3>End-to-End Fulfillment Stack</h3>
-    </div>
-
-    <div className="services-grid">
-      {logisticsServices.map((service, idx) => (
-        <motion.article
-          key={service.title}
-          className="service-card"
-          initial={{ opacity: 0, y: 16 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.3, delay: idx * 0.08 }}
-        >
-          <div className="service-icon">
-            <service.icon size={18} />
-          </div>
-          <div>
-            <h4>{service.title}</h4>
-            <p>{service.detail}</p>
-          </div>
-          <span>{service.sla}</span>
-        </motion.article>
-      ))}
-    </div>
-
-    <div className="services-lower">
-      <div className="lane-list">
-        <h4>Active Trade Lanes</h4>
-        {activeLanes.map((lane) => (
-          <article key={lane.lane}>
-            <p>{lane.lane}</p>
-            <small>{lane.volume}</small>
-            <strong>{lane.status}</strong>
-          </article>
-        ))}
-      </div>
-
-      <div className="pipeline-view">
-        <h4>Fulfillment Pipeline</h4>
-        <div className="pipeline-track">
-          {pipelineStages.map((stage, idx) => (
-            <div key={stage} className="stage-node">
-              <span>{idx + 1}</span>
-              <p>{stage}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-
-    <OperationsHub />
-    <ServiceGovernance />
-  </section>
-);
-
-const OperationsHub = () => {
   const [requestService, setRequestService] = useState(requestTemplates[0]);
   const [requestRoute, setRequestRoute] = useState('LAX -> FRA');
   const [submitted, setSubmitted] = useState(false);
+
+  const suggestions = useMemo(() => {
+    const query = input.trim().toLowerCase();
+    if (!query) return commandList.slice(0, 4);
+    return commandList.filter((cmd) => cmd.startsWith(query)).slice(0, 4);
+  }, [input]);
+
+  const executeCommand = (value: string) => {
+    const response = runCommand(value);
+    if (response === '__clear__') {
+      setHistory([]);
+      setInput('');
+      return;
+    }
+
+    setHistory((prev) => [...prev, `> ${value.trim()}`, response]);
+    setInput('');
+  };
+
+  const handleCommandSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!input.trim()) return;
+    executeCommand(input);
+  };
 
   const submitRequest = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -606,199 +144,237 @@ const OperationsHub = () => {
   };
 
   return (
-    <div className="ops-hub">
-      <section className="ops-panel queue-panel">
-        <h4>
-          <Layers size={14} />
-          Shipment Queue
-        </h4>
-        <div className="queue-rows">
-          {shipmentQueue.map((item) => (
-            <article key={item.id}>
-              <div>
-                <p>{item.id}</p>
-                <small>{item.route}</small>
+    <div className="page">
+      <header className="topbar card">
+        <div>
+          <p className="kicker">Global Streamline LLC</p>
+          <h1>Logistics Operations Platform</h1>
+        </div>
+        <div className="status">
+          <span className="status-dot" />
+          <span>System Healthy</span>
+          <span>Latency 11ms</span>
+          <span>Nodes 64</span>
+        </div>
+      </header>
+
+      <section className="hero card">
+        <div>
+          <p className="kicker">Overview</p>
+          <h2>Secure, Scalable Logistics Execution</h2>
+          <p>
+            Unified visibility for shipping, fulfillment, risk monitoring, and client SLAs across air,
+            ocean, and ground operations.
+          </p>
+        </div>
+        <button className="primary">Create Shipment</button>
+      </section>
+
+      <section className="kpi-grid">
+        {kpis.map((kpi) => (
+          <article key={kpi.label} className="card kpi-card">
+            <div className="kpi-head">
+              <kpi.icon size={18} />
+              <span>{kpi.label}</span>
+            </div>
+            <h3>{kpi.value}</h3>
+            <p>{kpi.detail}</p>
+          </article>
+        ))}
+      </section>
+
+      <section className="services card">
+        <div className="section-head">
+          <h3>Logistics Services</h3>
+          <p>Enterprise-grade service stack and operating lanes</p>
+        </div>
+
+        <div className="services-grid">
+          {logisticsServices.map((service) => (
+            <article key={service.title} className="service-card">
+              <div className="service-icon">
+                <service.icon size={18} />
               </div>
-              <span className="mode-pill">{item.mode}</span>
-              <span className="eta-pill">{item.eta}</span>
-              <strong>{item.priority}</strong>
+              <div>
+                <h4>{service.title}</h4>
+                <p>{service.detail}</p>
+              </div>
+              <span>{service.sla}</span>
             </article>
           ))}
         </div>
-      </section>
 
-      <section className="ops-panel risk-panel">
-        <h4>
-          <AlertTriangle size={14} />
-          SLA Risk Monitor
-        </h4>
-        <div className="risk-list">
-          {slaAlerts.map((alert) => (
-            <article key={alert.lane} className={`risk-${alert.level}`}>
-              <div>
-                <p>{alert.lane}</p>
-                <small>{alert.issue}</small>
-              </div>
-              <span>{alert.level}</span>
-            </article>
-          ))}
-        </div>
-      </section>
+        <div className="services-lower">
+          <div className="lane-list">
+            <h4>Active Trade Lanes</h4>
+            {activeLanes.map((lane) => (
+              <article key={lane.lane}>
+                <p>{lane.lane}</p>
+                <small>{lane.volume}</small>
+                <strong>{lane.status}</strong>
+              </article>
+            ))}
+          </div>
 
-      <section className="ops-panel request-panel">
-        <h4>
-          <CheckCircle2 size={14} />
-          Service Request Intake
-        </h4>
-        <form onSubmit={submitRequest}>
-          <label>
-            Service
-            <select
-              value={requestService}
-              onChange={(event) => setRequestService(event.target.value)}
-            >
-              {requestTemplates.map((template) => (
-                <option key={template} value={template}>
-                  {template}
-                </option>
+          <div className="pipeline-view">
+            <h4>Fulfillment Pipeline</h4>
+            <div className="pipeline-track">
+              {pipelineStages.map((stage, idx) => (
+                <div key={stage} className="stage-node">
+                  <span>{idx + 1}</span>
+                  <p>{stage}</p>
+                </div>
               ))}
-            </select>
-          </label>
-          <label>
-            Route
-            <input
-              value={requestRoute}
-              onChange={(event) => setRequestRoute(event.target.value)}
-            />
-          </label>
-          <button type="submit">Submit Mission</button>
-          {submitted && <p className="request-ok">Request secured in orchestration queue.</p>}
-        </form>
+            </div>
+          </div>
+        </div>
       </section>
-    </div>
-  );
-};
 
-const ServiceGovernance = () => (
-  <div className="governance-grid">
-    <section className="gov-panel playbook-panel">
-      <h4>Operations Playbooks</h4>
-      <div className="playbook-list">
-        {servicePlaybooks.map((item) => (
-          <article key={item.name}>
-            <div>
-              <p>{item.name}</p>
-              <small>{item.owner}</small>
-            </div>
-            <span>{item.status}</span>
-          </article>
-        ))}
-      </div>
-    </section>
+      <section className="ops-grid">
+        <article className="card ops-panel">
+          <h4>
+            <Layers size={14} /> Shipment Queue
+          </h4>
+          <div className="queue-rows">
+            {shipmentQueue.map((item) => (
+              <article key={item.id}>
+                <div>
+                  <p>{item.id}</p>
+                  <small>{item.route}</small>
+                </div>
+                <span className="pill">{item.mode}</span>
+                <span className="pill">{item.eta}</span>
+                <strong className="pill">{item.priority}</strong>
+              </article>
+            ))}
+          </div>
+        </article>
 
-    <section className="gov-panel client-panel">
-      <h4>Client SLA Board</h4>
-      <div className="client-rows">
-        {clientSlaBoard.map((client) => (
-          <article key={client.client}>
-            <div>
-              <p>{client.client}</p>
-              <small>{client.contract}</small>
-            </div>
-            <span>{client.onTime}</span>
-            <strong>{client.risk}</strong>
-          </article>
-        ))}
-      </div>
-    </section>
+        <article className="card ops-panel">
+          <h4>
+            <AlertTriangle size={14} /> SLA Risk Monitor
+          </h4>
+          <div className="risk-list">
+            {slaAlerts.map((alert) => (
+              <article key={alert.lane}>
+                <div>
+                  <p>{alert.lane}</p>
+                  <small>{alert.issue}</small>
+                </div>
+                <span>{alert.level}</span>
+              </article>
+            ))}
+          </div>
+        </article>
 
-    <section className="gov-panel fleet-panel">
-      <h4>Fleet Asset Readiness</h4>
-      <div className="fleet-list">
-        {fleetReadiness.map((fleet) => (
-          <article key={fleet.asset}>
-            <div>
-              <p>{fleet.asset}</p>
-              <small>ready {fleet.ready}</small>
-            </div>
-            <span>{fleet.health}</span>
-          </article>
-        ))}
-      </div>
-    </section>
-  </div>
-);
+        <article className="card ops-panel">
+          <h4>
+            <CheckCircle2 size={14} /> Service Request Intake
+          </h4>
+          <form className="request-form" onSubmit={submitRequest}>
+            <label>
+              Service
+              <select value={requestService} onChange={(event) => setRequestService(event.target.value)}>
+                {requestTemplates.map((template) => (
+                  <option key={template} value={template}>
+                    {template}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              Route
+              <input value={requestRoute} onChange={(event) => setRequestRoute(event.target.value)} />
+            </label>
+            <button type="submit" className="primary">
+              Submit Request
+            </button>
+            {submitted && <p className="ok">Request received by operations desk.</p>}
+          </form>
+        </article>
+      </section>
 
-const BootSequence = () => (
-  <motion.div
-    className="boot-sequence"
-    initial={{ opacity: 1 }}
-    animate={{ opacity: 1 }}
-    transition={{ duration: 0.4 }}
-  >
-    <div className="boot-console">
-      <p className="boot-title">GLOBAL STREAMLINE // SYSTEM BOOT</p>
-      <div className="boot-lines">
-        {bootLines.map((line, idx) => (
-          <motion.p
-            key={line}
-            initial={{ opacity: 0, x: -10 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: idx * 0.22, duration: 0.18 }}
-          >
-            {line}
-          </motion.p>
-        ))}
-      </div>
-      <div className="boot-progress">
-        <motion.span
-          initial={{ width: 0 }}
-          animate={{ width: '100%' }}
-          transition={{ duration: 2.2, ease: 'easeOut' }}
-        />
-      </div>
-    </div>
-  </motion.div>
-);
+      <section className="governance-grid">
+        <article className="card gov-panel">
+          <h4>Operations Playbooks</h4>
+          <div className="list">
+            {servicePlaybooks.map((item) => (
+              <article key={item.name}>
+                <div>
+                  <p>{item.name}</p>
+                  <small>{item.owner}</small>
+                </div>
+                <span>{item.status}</span>
+              </article>
+            ))}
+          </div>
+        </article>
 
-function App() {
-  const [bootDone, setBootDone] = useState(false);
-  const { audioPulse, isReactive, startAudioPulse } = useAudioPulse();
+        <article className="card gov-panel">
+          <h4>Client SLA Board</h4>
+          <div className="list">
+            {clientSlaBoard.map((client) => (
+              <article key={client.client}>
+                <div>
+                  <p>{client.client}</p>
+                  <small>{client.contract}</small>
+                </div>
+                <span>{client.onTime}</span>
+                <strong>{client.risk}</strong>
+              </article>
+            ))}
+          </div>
+        </article>
 
-  useEffect(() => {
-    const timer = window.setTimeout(() => {
-      setBootDone(true);
-    }, 2500);
+        <article className="card gov-panel">
+          <h4>Fleet Asset Readiness</h4>
+          <div className="list">
+            {fleetReadiness.map((fleet) => (
+              <article key={fleet.asset}>
+                <div>
+                  <p>{fleet.asset}</p>
+                  <small>ready {fleet.ready}</small>
+                </div>
+                <span>{fleet.health}</span>
+              </article>
+            ))}
+          </div>
+        </article>
+      </section>
 
-    return () => window.clearTimeout(timer);
-  }, []);
-
-  const style = {
-    '--pulse-strength': `${audioPulse}`,
-  } as CSSProperties;
-
-  return (
-    <div className="app-shell" style={style}>
-      <MatrixRain />
-      <div className="noise" aria-hidden="true" />
-      <div className="scanlines" aria-hidden="true" />
-      <div className="crt-flicker" aria-hidden="true" />
-      {!bootDone && <BootSequence />}
-      <Header />
-      <main className="layout">
-        <div className="left-col">
-          <HeroPanel onLaunch={startAudioPulse} isReactive={isReactive} />
-          <CommandCards />
+      <section className="card terminal">
+        <div className="section-head">
+          <h3>Operations Log</h3>
+          <p>Command mock for internal workflows</p>
         </div>
-        <div className="right-col">
-          <TerminalPanel />
-          <SectorPanel />
+
+        <div className="log-lines">
+          {history.map((line, idx) => (
+            <p key={`${line}-${idx}`}>{line}</p>
+          ))}
         </div>
-      </main>
-      <ServicesMatrix />
-      <footer className="footer-bar">
-        <p>Global Streamline LLC // Enterprise Signal Network // 2026</p>
-      </footer>
+
+        <form className="command-form" onSubmit={handleCommandSubmit}>
+          <input
+            value={input}
+            onChange={(event) => setInput(event.target.value)}
+            placeholder="Enter command (example: status --nodes)"
+          />
+          <button type="submit" className="primary">
+            Run
+          </button>
+        </form>
+
+        {suggestions.length > 0 && (
+          <div className="suggestions">
+            {suggestions.map((suggestion) => (
+              <button key={suggestion} type="button" onClick={() => executeCommand(suggestion)}>
+                {suggestion}
+              </button>
+            ))}
+          </div>
+        )}
+      </section>
     </div>
   );
 }

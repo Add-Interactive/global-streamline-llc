@@ -1,14 +1,15 @@
-@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;800&family=Share+Tech+Mono&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Manrope:wght@500;600;700;800&display=swap');
 
 :root {
-  --bg-0: #070b14;
-  --bg-1: #0b1523;
-  --bg-2: #0b1713;
-  --line: rgba(113, 239, 174, 0.24);
-  --text-main: #d6ffec;
-  --text-dim: #7eaa97;
-  --font-display: 'Orbitron', sans-serif;
-  --font-mono: 'Share Tech Mono', monospace;
+  --bg: #f3f7fb;
+  --surface: #f8fbff;
+  --surface-soft: #eaf3fb;
+  --border: #d7e5f1;
+  --text-main: #153244;
+  --muted: #567184;
+  --brand: #0f6a95;
+  --font-display: 'Manrope', sans-serif;
+  --font-mono: 'IBM Plex Mono', monospace;
 }
 
 * {
@@ -19,26 +20,27 @@
 
 body {
   font-family: var(--font-display);
-  background:
-    radial-gradient(circle at 85% 15%, rgba(45, 190, 255, 0.14), transparent 35%),
-    radial-gradient(circle at 15% 85%, rgba(40, 214, 122, 0.13), transparent 40%),
-    linear-gradient(145deg, var(--bg-0), var(--bg-1) 58%, var(--bg-2));
+  background: linear-gradient(180deg, #f6faff 0%, var(--bg) 100%);
   color: var(--text-main);
-  overflow-x: hidden;
   min-height: 100vh;
 }
 
 h1,
 h2,
 h3,
+h4,
 p {
   margin: 0;
 }
 
+button,
+input,
+select {
+  font-family: inherit;
+}
+
 button {
   cursor: pointer;
-  transition: all 0.24s ease;
-  font-family: inherit;
 }
 
 #root {
