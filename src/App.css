@@ -433,12 +433,21 @@
   margin-bottom: 0.45rem;
 }
 
-.contact-grid img {
-  width: 100%;
-  height: auto;
-  border-radius: 8px;
-  border: 1px solid #d8e6f2;
-  display: block;
+.contact-list {
+  list-style: none;
+  display: grid;
+  gap: 0.42rem;
+}
+
+.contact-list a {
+  color: var(--brand);
+  text-decoration: none;
+  font-size: 0.86rem;
+  font-weight: 600;
+}
+
+.contact-list a:hover {
+  text-decoration: underline;
 }
 
 @media (max-width: 1100px) {

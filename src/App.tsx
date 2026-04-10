@@ -89,6 +89,9 @@ const fleetReadiness = [
   { asset: 'Ground Vehicles', ready: '219/240', health: '91%' },
 ];
 
+const contactEmails = ['admin@globalstreamlinellc.com', 'evelyn@globalstreamlinellc.com'];
+const contactPhones = ['(302) 310-4700', '(302) 310-4701'];
+
 const commandList = ['help', 'scan --all', 'status --nodes', 'trace GS-90217', 'clear'];
 
 const runCommand = (raw: string) => {
@@ -384,11 +387,26 @@ function App() {
         <div className="contact-grid">
           <article>
             <h4>Email Contacts</h4>
-            <img src="/contact-email.jpg" alt="Global Streamline email contact details" />
+            <ul className="contact-list">
+              {contactEmails.map((email) => (
+                <li key={email}>
+                  <a href={`mailto:${email}`}>{email}</a>
+                </li>
+              ))}
+            </ul>
           </article>
           <article>
             <h4>Phone Contacts</h4>
-            <img src="/contact-phone.jpg" alt="Global Streamline phone contact details" />
+            <ul className="contact-list">
+              {contactPhones.map((phone) => {
+                const tel = phone.replace(/[^\d+]/g, '');
+                return (
+                  <li key={phone}>
+                    <a href={`tel:${tel}`}>{phone}</a>
+                  </li>
+                );
+              })}
+            </ul>
           </article>
         </div>
       </section>
