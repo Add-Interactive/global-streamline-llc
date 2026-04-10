@@ -375,6 +375,23 @@ function App() {
           </div>
         )}
       </section>
+
+      <section className="card contact-assets">
+        <div className="section-head">
+          <h3>Contact Information</h3>
+          <p>Official company contact details</p>
+        </div>
+        <div className="contact-grid">
+          <article>
+            <h4>Email Contacts</h4>
+            <img src="/contact-email.jpg" alt="Global Streamline email contact details" />
+          </article>
+          <article>
+            <h4>Phone Contacts</h4>
+            <img src="/contact-phone.jpg" alt="Global Streamline phone contact details" />
+          </article>
+        </div>
+      </section>
     </div>
   );
 }

@@ -409,6 +409,38 @@
   font-size: 0.73rem;
 }
 
+.contact-assets {
+  padding: 0.9rem;
+}
+
+.contact-grid {
+  margin-top: 0.65rem;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.7rem;
+}
+
+.contact-grid article {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.6rem;
+  background: #fff;
+}
+
+.contact-grid h4 {
+  font-size: 0.86rem;
+  color: var(--muted);
+  margin-bottom: 0.45rem;
+}
+
+.contact-grid img {
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+  border: 1px solid #d8e6f2;
+  display: block;
+}
+
 @media (max-width: 1100px) {
   .services-lower,
   .ops-grid,
@@ -429,7 +461,8 @@
 
   .kpi-grid,
   .services-grid,
-  .pipeline-track {
+  .pipeline-track,
+  .contact-grid {
     grid-template-columns: 1fr;
   }
 
